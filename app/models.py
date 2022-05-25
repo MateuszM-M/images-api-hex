@@ -11,3 +11,10 @@ class User(AbstractUser):
                                 on_delete=models.SET_NULL,
                                 null=True,
                                 blank=True)
+    
+
+class Photo(models.Model):
+    user = models.ForeignKey(User,
+                             related_name='photos',
+                             on_delete=models.CASCADE)
+    photo = models.ImageField(upload_to="photos")

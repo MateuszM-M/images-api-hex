@@ -11,7 +11,8 @@ class PhotoViewSet(mixins.CreateModelMixin,
     """
     A viewset that provides `create` and 'list' action
     """
-    queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Photo.objects.filter(user=self.request.user)

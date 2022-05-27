@@ -21,7 +21,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'photos', views.PhotoViewSet, basename="photos")
+router.register(r'images', views.ImageViewSet, basename="images")
 
 
 urlpatterns = [

@@ -1,18 +1,18 @@
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Photo
-from .serializers import PhotoSerializer
+from .models import Image, Upload
+from .serializers import UploadSerializer
 
 
-class PhotoViewSet(mixins.CreateModelMixin,
+class ImageViewSet(mixins.CreateModelMixin,
                          mixins.ListModelMixin,
                          viewsets.GenericViewSet):
     """
     A viewset that provides `create` and 'list' action
     """
-    serializer_class = PhotoSerializer
+    serializer_class = UploadSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Photo.objects.filter(user=self.request.user)
+        return Upload.objects.filter(user=self.request.user)

@@ -13,8 +13,15 @@ class User(AbstractUser):
                                 blank=True)
     
 
-class Photo(models.Model):
+class Upload(models.Model):
     user = models.ForeignKey(User,
-                             related_name='photos',
+                             related_name='upload',
                              on_delete=models.CASCADE)
-    photo = models.ImageField(upload_to="photos")
+
+
+class Image(models.Model):
+    upload = models.ForeignKey(Upload,
+                               related_name='images',
+                               on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="images")
+    

@@ -11,7 +11,8 @@ class Thumbnail(models.Model):
     max_heigh = models.PositiveIntegerField(
         validators=[validate_max_height]
     )
-    tier = models.ForeignKey(Tier, 
+    tier = models.ForeignKey(Tier,
+                             related_name='thumbnails',
                              on_delete=models.CASCADE)
 
 

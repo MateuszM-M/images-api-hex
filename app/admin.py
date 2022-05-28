@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Thumbnail, Tier, User
+from .models import Thumbnail, Tier, User, Upload
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -17,3 +17,4 @@ class TierAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Tier, TierAdmin)
+admin.site.register(Upload)

@@ -1,6 +1,7 @@
 from PIL import Image as ImagePillow
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from io import BytesIO
 
 from .models import Image, Upload
 
@@ -23,7 +24,7 @@ class ImageWriteSerializer(serializers.ModelSerializer):
                 "Only .jpg and .png formats are allowed."
             )
         return super(ImageWriteSerializer, self).validate(value)
-
+    
 
 class UploadSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
@@ -40,7 +41,17 @@ class UploadSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         image_upload = validated_data.pop('image_upload')
         upload = Upload.objects.create(**validated_data)
+        output = BytesIO()
         Image.objects.create(upload=upload, **image_upload)
+        
+        thumbnails = validated_data['user'].tier.thumbnails.all()
+        for t in thumbnails:
+            image = ImagePillow.open(image_upload['image'])
+            thb = image.resize((t.max_heigh, t.max_heigh), ImagePillow.ANTIALIAS)
+            thb.save(output, format=image.format)
+            image_upload['image'].image = thb
+            Image.objects.create(upload=upload, **image_upload)
+            
         return upload
         
     def save(self, **kwargs):

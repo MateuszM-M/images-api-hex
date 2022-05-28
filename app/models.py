@@ -1,9 +1,18 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from .validators import validate_max_height
 
 
 class Tier(models.Model):
     name = models.CharField(max_length=15)
+    
+    
+class Thumbnail(models.Model):
+    max_heigh = models.PositiveIntegerField(
+        validators=[validate_max_height]
+    )
+    tier = models.ForeignKey(Tier, 
+                             on_delete=models.CASCADE)
 
 
 class User(AbstractUser):

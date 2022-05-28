@@ -1,6 +1,19 @@
 from django.contrib import admin
 
-from .models import User, Tier
+from .models import Thumbnail, Tier, User
 
-admin.site.register(User)
-admin.site.register(Tier)
+
+class UserAdmin(admin.ModelAdmin):
+    model = User
+    
+    
+class ThumbnailInline(admin.StackedInline):
+    model = Thumbnail
+    
+    
+class TierAdmin(admin.ModelAdmin):
+    model = Tier
+    inlines = [ThumbnailInline]
+
+admin.site.register(User, UserAdmin)
+admin.site.register(Tier, TierAdmin)

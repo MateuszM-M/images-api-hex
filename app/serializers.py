@@ -22,7 +22,7 @@ class ImageWriteSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 "Only .jpg and .png formats are allowed."
             )
-        return super(PhotoSerializer, self).validate(value)
+        return super(ImageWriteSerializer, self).validate(value)
 
 
 class UploadSerializer(serializers.ModelSerializer):

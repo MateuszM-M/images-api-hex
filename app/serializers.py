@@ -50,12 +50,12 @@ class UploadSerializer(serializers.ModelSerializer):
         thumbnails = validated_data['user'].tier.thumbnails.all()
         for t in thumbnails:
             image = ImagePillow.open(image_upload['image'])
-            thb = image.resize((t.max_heigh, t.max_heigh), ImagePillow.ANTIALIAS)
+            thb = image.resize((t.max_height, t.max_height), ImagePillow.ANTIALIAS)
             thb.save(img_io, format=image.format)
             new_pic = InMemoryUploadedFile(
                 img_io,
                 'ImageField',
-                f"{image_upload['image'].name}_thumbnail_{t.max_heigh}px.{image.format}",
+                f"{image_upload['image'].name}_thumbnail_{t.max_height}px.{image.format}",
                 image.format,
                 sys.getsizeof(img_io),
                 None)

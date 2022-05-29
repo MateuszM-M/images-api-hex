@@ -1,7 +1,10 @@
+import sys
+from io import BytesIO
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image as ImagePillow
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from io import BytesIO
 
 from .models import Image, Upload
 
@@ -41,15 +44,23 @@ class UploadSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         image_upload = validated_data.pop('image_upload')
         upload = Upload.objects.create(**validated_data)
-        output = BytesIO()
+        img_io = BytesIO()
         Image.objects.create(upload=upload, **image_upload)
         
         thumbnails = validated_data['user'].tier.thumbnails.all()
         for t in thumbnails:
             image = ImagePillow.open(image_upload['image'])
             thb = image.resize((t.max_heigh, t.max_heigh), ImagePillow.ANTIALIAS)
-            thb.save(output, format=image.format)
-            image_upload['image'].image = thb
+            thb.save(img_io, format=image.format)
+            new_pic = InMemoryUploadedFile(
+                img_io,
+                'ImageField',
+                f"{image_upload['image'].name}_thumbnail_{t.max_heigh}px.{image.format}",
+                image.format,
+                sys.getsizeof(img_io),
+                None)
+            
+            image_upload['image'] = new_pic
             Image.objects.create(upload=upload, **image_upload)
             
         return upload

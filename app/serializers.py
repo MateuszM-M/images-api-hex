@@ -1,35 +1,43 @@
-import sys
-from io import BytesIO
-
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image as ImagePillow
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from.upload_handling import tier_based_image_create
 from .models import Image, Upload
 
 
 class ImageReadSerializer(serializers.ModelSerializer):
+    """Image serializer used on read in upload serializer"""
+
     class Meta:
         model = Image
-        fields = ['image']
+        fields = ['label', 'image']
         
         
 class ImageWriteSerializer(serializers.ModelSerializer):
+    """Image serializer used on write in upload serializer"""
     class Meta:
         model = Image
         fields = ['image']
       
     def validate_image(self, value):
+        """Validates image extension, checks if its jpg or png"""
         img = ImagePillow.open(value)
         if img.format.lower() not in ['jpeg', 'jpg', 'png']:
-            raise ValidationError(
-                "Only .jpg and .png formats are allowed."
-            )
+            raise ValidationError("Only .jpg and .png formats are allowed.")
         return super(ImageWriteSerializer, self).validate(value)
     
 
 class UploadSerializer(serializers.ModelSerializer):
+    """
+    Upload serializer used for writing and reading upload objects.
+    
+    Attributes
+    ---------
+    user : user that uploads
+    images : based on image read serializer
+    imageee_upload : based on image write serializer
+    """
     user = serializers.PrimaryKeyRelatedField(
         read_only=True, 
         default=serializers.CurrentUserDefault()
@@ -42,27 +50,15 @@ class UploadSerializer(serializers.ModelSerializer):
         fields = ['user', 'images', 'image_upload']
         
     def create(self, validated_data):
+        """Creates upload instance. Calls tier_based_image_create
+        to create images in elegant way, based on tier """
+        user = validated_data['user']
+        tier = user.tier
         image_upload = validated_data.pop('image_upload')
         upload = Upload.objects.create(**validated_data)
-        img_io = BytesIO()
-        Image.objects.create(upload=upload, **image_upload)
         
-        thumbnails = validated_data['user'].tier.thumbnails.all()
-        for t in thumbnails:
-            image = ImagePillow.open(image_upload['image'])
-            thb = image.resize((t.max_height, t.max_height), ImagePillow.ANTIALIAS)
-            thb.save(img_io, format=image.format)
-            new_pic = InMemoryUploadedFile(
-                img_io,
-                'ImageField',
-                f"{image_upload['image'].name}_thumbnail_{t.max_height}px.{image.format}",
-                image.format,
-                sys.getsizeof(img_io),
-                None)
-            
-            image_upload['image'] = new_pic
-            Image.objects.create(upload=upload, **image_upload)
-            
+        tier_based_image_create(tier, upload, image_upload)
+        
         return upload
         
     def save(self, **kwargs):

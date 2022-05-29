@@ -14,8 +14,10 @@ class Tier(models.Model):
     Attributes
     ---------
     name : name of the tier
+    is_original_allowed : if true, uploads image of original size
     """
     name = models.CharField(max_length=15)
+    is_original_allowed = models.BooleanField()
     
     def __str__(self):
         return self.name
@@ -43,6 +45,9 @@ class Thumbnail(models.Model):
     
     def __str__(self):
         return f"{self.tier}: max_height: {max_height}"
+    
+    class Meta:
+        ordering = ['-max_height']
 
 
 class User(AbstractUser):
@@ -98,8 +103,9 @@ class Image(models.Model):
     upload = models.ForeignKey(Upload,
                                related_name='images',
                                on_delete=models.CASCADE)
+    label = models.CharField(max_length=50)
     image = models.ImageField(upload_to="images")
     
     def __str__(self):
-        return f"{self.upload}, {self.image}"
+        return f"{self.upload}, {self.label}, {self.image}"
     

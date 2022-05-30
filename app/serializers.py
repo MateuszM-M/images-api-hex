@@ -2,10 +2,10 @@ from PIL import Image as ImagePillow
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from.upload_handling import tier_based_image_create
-from .models import Image, Upload
-
+from.upload_handling import tier_based_image_create, tier_based_upload_create
 from django.utils import timezone
+
+from .models import Image, Upload
 
 
 class ImageReadSerializer(serializers.ModelSerializer):
@@ -32,7 +32,8 @@ class ImageWriteSerializer(serializers.ModelSerializer):
 
 class UploadSerializer(serializers.ModelSerializer):
     """
-    Upload serializer used for writing and reading upload objects.
+    Upload serializer used for writing and reading upload objects
+    for users that are not allowed to set duration.
     
     Attributes
     ---------
@@ -54,28 +55,18 @@ class UploadSerializer(serializers.ModelSerializer):
             'images',
             'image_upload',
             'created',
-            'duration',
-            'expire_date',
             ]
-        extra_kwargs = {
-            'duration': {'write_only':True},
-            'expire_date': {'read_only':True}
-        }
-        
+
     def create(self, validated_data):
-        """Creates upload instance. Calls tier_based_image_create
-        to create images in elegant way, based on tier """
+        """
+        Creates upload instance. Calls tier_based_image_create
+        to create images in elegant way, based on tier.
+        """
         user = validated_data['user']
         tier = user.tier
         image_upload = validated_data.pop('image_upload')
         
-        if validated_data['duration']:
-            validated_data['expire_date'] = \
-            timezone.now() + timezone.timedelta(
-                seconds=validated_data['duration'])
-            
-        upload = Upload.objects.create(**validated_data)
-        
+        upload = tier_based_upload_create(tier, validated_data)
         tier_based_image_create(tier, upload, image_upload)
         
         return upload
@@ -86,3 +77,20 @@ class UploadSerializer(serializers.ModelSerializer):
         """
         kwargs["user"] = self.fields["user"].get_default()
         return super().save(**kwargs)
+
+
+class UploadSerializerWithExpire(UploadSerializer):
+    """
+    Inherits from UploadSerializer, provides extra fields
+    for users who can set expire time for thier uploads.
+    """
+    class Meta(UploadSerializer.Meta):
+        model = Upload
+        fields = UploadSerializer.Meta.fields + [
+            'duration',
+            'expire_date',
+            ]
+        extra_kwargs = {
+            'duration': {'write_only':True},
+            'expire_date': {'read_only':True}
+        }

@@ -2,9 +2,10 @@ import sys
 from io import BytesIO
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.utils import timezone
 from PIL import Image as ImagePillow
 
-from .models import Image
+from .models import Image, Upload
 
 
 def create_original_image(tier, upload, image_upload):
@@ -69,11 +70,27 @@ def create_thumbnails(tier, upload, image_upload):
 
 
 def tier_based_image_create(tier, upload, image_upload):
-    """ Called in serializer. Creates images in upload in elegant way,
-    based on user's tier."""
+    """ 
+    Called in serializer. Creates images in upload in elegant way,
+    based on user's tier.
+    """
     
     create_original_image(tier, upload, image_upload)
     
     create_thumbnails(tier, upload, image_upload)
+    
+    return upload
+
+def tier_based_upload_create(tier, validated_data):
+    """
+    Called in serializes. Creates upload object. 
+    Sets expire_date when duration was provided.
+    """
+    if validated_data["duration"] is not None:
+        validated_data['expire_date'] = \
+        timezone.now() + timezone.timedelta(
+            seconds=validated_data['duration'])
+            
+    upload = Upload.objects.create(**validated_data)
     
     return upload

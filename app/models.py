@@ -1,9 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 from .validators import validate_max_height
-
-from django.utils import timezone
 
 
 class Tier(models.Model):
@@ -17,9 +16,18 @@ class Tier(models.Model):
     ---------
     name : name of the tier
     is_original_allowed : if true, uploads image of original size
+    is_expiring_allowed : if true, user can set upload expire time
     """
-    name = models.CharField(max_length=15)
-    is_original_allowed = models.BooleanField()
+    name = models.CharField(
+        max_length=15,
+        verbose_name = "Tier name"
+        )
+    is_original_allowed = models.BooleanField(
+        verbose_name = "Is uploading of original picture allowed?"
+    )
+    is_expiring_allowed = models.BooleanField(
+        verbose_name = "Is setting expire time allowed?"
+    )
     
     def __str__(self):
         return self.name
@@ -41,9 +49,11 @@ class Thumbnail(models.Model):
     max_height = models.PositiveIntegerField(
         validators=[validate_max_height]
     )
-    tier = models.ForeignKey(Tier,
-                             related_name='thumbnails',
-                             on_delete=models.CASCADE)
+    tier = models.ForeignKey(
+        Tier,
+        related_name='thumbnails',
+        on_delete=models.CASCADE
+        )
     
     def __str__(self):
         return f"{self.tier}: max_height: {self.max_height}"
@@ -60,10 +70,12 @@ class User(AbstractUser):
     ---------
     tier : one to one relation, states user tier
     """
-    tier = models.OneToOneField(Tier, 
-                                on_delete=models.SET_NULL,
-                                null=True,
-                                blank=True)
+    tier = models.OneToOneField(
+        Tier, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+        )
 
 
 class Upload(models.Model):
@@ -82,13 +94,26 @@ class Upload(models.Model):
     Attributes
     ---------
     user : foreign key, one user can have many uploads
+    created : object creation time
+    duration : seconds added to created to set expire_date
+    epxire_date : states when upload expires, created + duration
     """
-    user = models.ForeignKey(User,
-                             related_name='upload',
-                             on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
-    duration = models.PositiveIntegerField(blank=True, null=True)
-    expire_date = models.DateTimeField(blank=True, null=True)
+    user = models.ForeignKey(
+        User,
+        related_name='upload',
+        on_delete=models.CASCADE
+        )
+    created = models.DateTimeField(
+        auto_now_add=True
+        )
+    duration = models.PositiveIntegerField(
+        blank=True,
+        null=True
+        )
+    expire_date = models.DateTimeField(
+        blank=True,
+        null=True
+        )
     
     def __str__(self):
         return f"{self.id}, {self.user}"
@@ -103,13 +128,20 @@ class Image(models.Model):
     Attributes
     ---------
     upload : foreign key, on upload can consist of many images
+    label : informs about image type, original or thumbnail
     image : actual image or thumbnail
     """
-    upload = models.ForeignKey(Upload,
-                               related_name='images',
-                               on_delete=models.CASCADE)
-    label = models.CharField(max_length=50)
-    image = models.ImageField(upload_to="images")
+    upload = models.ForeignKey(
+        Upload,
+        related_name='images',
+        on_delete=models.CASCADE
+        )
+    label = models.CharField(
+        max_length=50
+        )
+    image = models.ImageField(
+        upload_to="images"
+        )
     
     def __str__(self):
         return f"{self.upload}, {self.label}, {self.image}"

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # 3rd party apps:
     'storages',
     'rest_framework',
+    "corsheaders",
     
     # my apps:
     'app.apps.AppConfig',
@@ -65,6 +66,7 @@ AUTH_USER_MODEL = "app.User"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -150,3 +152,7 @@ MEDIA_ROOT = 'media'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS Settings
+
+CORS_ALLOW_ALL_ORIGINS = True

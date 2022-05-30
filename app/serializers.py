@@ -41,12 +41,15 @@ class UploadSerializer(serializers.ModelSerializer):
     images : based on image read serializer
     imageee_upload : based on image write serializer
     """
-    user = serializers.PrimaryKeyRelatedField(
+    user = serializers.SerializerMethodField(
         read_only=True, 
         default=serializers.CurrentUserDefault()
         )
     images = ImageReadSerializer(many=True, read_only=True)
     image_upload = ImageWriteSerializer(write_only=True)
+    
+    def get_user(self, obj):
+        return obj.user.username
     
     class Meta:
         model = Upload
@@ -57,6 +60,7 @@ class UploadSerializer(serializers.ModelSerializer):
             'created',
             ]
 
+        
     def create(self, validated_data):
         """
         Creates upload instance. Calls tier_based_image_create

@@ -5,6 +5,8 @@ from rest_framework.exceptions import ValidationError
 from.upload_handling import tier_based_image_create
 from .models import Image, Upload
 
+from django.utils import timezone
+
 
 class ImageReadSerializer(serializers.ModelSerializer):
     """Image serializer used on read in upload serializer"""
@@ -47,7 +49,18 @@ class UploadSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Upload
-        fields = ['user', 'images', 'image_upload']
+        fields = [
+            'user',
+            'images',
+            'image_upload',
+            'created',
+            'duration',
+            'expire_date',
+            ]
+        extra_kwargs = {
+            'duration': {'write_only':True},
+            'expire_date': {'read_only':True}
+        }
         
     def create(self, validated_data):
         """Creates upload instance. Calls tier_based_image_create
@@ -55,6 +68,12 @@ class UploadSerializer(serializers.ModelSerializer):
         user = validated_data['user']
         tier = user.tier
         image_upload = validated_data.pop('image_upload')
+        
+        if validated_data['duration']:
+            validated_data['expire_date'] = \
+            timezone.now() + timezone.timedelta(
+                seconds=validated_data['duration'])
+            
         upload = Upload.objects.create(**validated_data)
         
         tier_based_image_create(tier, upload, image_upload)

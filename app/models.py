@@ -3,6 +3,8 @@ from django.db import models
 
 from .validators import validate_max_height
 
+from django.utils import timezone
+
 
 class Tier(models.Model):
     """
@@ -44,7 +46,7 @@ class Thumbnail(models.Model):
                              on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.tier}: max_height: {max_height}"
+        return f"{self.tier}: max_height: {self.max_height}"
     
     class Meta:
         ordering = ['-max_height']
@@ -62,7 +64,7 @@ class User(AbstractUser):
                                 on_delete=models.SET_NULL,
                                 null=True,
                                 blank=True)
-    
+
 
 class Upload(models.Model):
     """
@@ -84,10 +86,13 @@ class Upload(models.Model):
     user = models.ForeignKey(User,
                              related_name='upload',
                              on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    duration = models.PositiveIntegerField(blank=True, null=True)
+    expire_date = models.DateTimeField(blank=True, null=True)
     
     def __str__(self):
         return f"{self.id}, {self.user}"
-
+    
 
 class Image(models.Model):
     """

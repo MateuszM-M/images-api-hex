@@ -4,6 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Image, Upload
 from .serializers import UploadSerializer
 
+from django.utils import timezone
+from django.db.models import Q
+
 
 class UploadViewSet(mixins.CreateModelMixin,
                          mixins.ListModelMixin,
@@ -18,4 +21,8 @@ class UploadViewSet(mixins.CreateModelMixin,
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Upload.objects.filter(user=self.request.user)
+        user = self.request.user
+        tz = timezone.now()
+        qs = Upload.objects.filter(user=user).filter(
+            Q(expire_date__gt=tz) | Q(expire_date__isnull=True))
+        return qs

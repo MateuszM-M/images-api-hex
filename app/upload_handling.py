@@ -86,10 +86,11 @@ def tier_based_upload_create(tier, validated_data):
     Called in serializes. Creates upload object. 
     Sets expire_date when duration was provided.
     """
-    if validated_data["duration"] is not None:
-        validated_data['expire_date'] = \
-        timezone.now() + timezone.timedelta(
-            seconds=validated_data['duration'])
+    if "duration" in validated_data.keys():
+        if validated_data["duration"] is not None:
+            validated_data['expire_date'] = \
+            timezone.now() + timezone.timedelta(
+                seconds=validated_data['duration'])
             
     upload = Upload.objects.create(**validated_data)
     

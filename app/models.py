@@ -2,7 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
-from .validators import validate_max_height
+from .validators import (validate_max_duration, validate_max_height,
+                         validate_min_duration)
 
 
 class Tier(models.Model):
@@ -106,6 +107,9 @@ class Upload(models.Model):
         auto_now_add=True
         )
     duration = models.PositiveIntegerField(
+        validators=[
+            validate_max_duration,
+            validate_min_duration],
         blank=True,
         null=True
         )

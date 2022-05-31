@@ -68,13 +68,12 @@ class User(AbstractUser):
     
     Attributes
     ---------
-    tier : one to one relation, states user tier
+    tier : one tier can be set to many users, states user tier
     """
-    tier = models.OneToOneField(
+    tier = models.ForeignKey(
         Tier, 
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
+        on_delete=models.SET_DEFAULT,
+        default=1
         )
 
 

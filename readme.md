@@ -13,6 +13,8 @@ Docker:
 
 or demo: `https://images-api-hex.herokuapp.com/`
 
+Login on admin site
+
 ## Endpoints
 
 1. GET `/images`
@@ -31,6 +33,9 @@ or demo: `https://images-api-hex.herokuapp.com/`
  - pagination
  - docker-compose
 
+ Unfortunately, due to end of time, project contains few tests.
+ I know that heroku raises 500 when uploading with multiple image upload tier but it's working locally, just did not have enough time to investigate that.
+
 ## Stack
 
  - Python
@@ -42,7 +47,8 @@ or demo: `https://images-api-hex.herokuapp.com/`
  - Pillow
  - AWS S3
  - Heroku
+ - Factory boy
 
- ### Scren
+ ### Screen
 
  ![Alt text](static/screens/screen.png "Screen")

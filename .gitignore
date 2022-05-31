@@ -4,5 +4,3 @@ __pycache__
 *.docx
 ~*
 /media
-/static
-.env
